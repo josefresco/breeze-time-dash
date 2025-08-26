@@ -55,6 +55,7 @@ Deploy to any web server with PHP support. The dashboard will be available at yo
 
 ## Configuration Options
 
+### Basic Settings
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `breeze_api_key` | - | Your Breeze PM API token (required) |
@@ -62,12 +63,48 @@ Deploy to any web server with PHP support. The dashboard will be available at yo
 | `excluded_users` | ['stuart'] | Users to exclude from leaderboard |
 | `api_timeout` | 10 | API request timeout in seconds |
 
+### Progress Level System
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `daily_increment` | 92 | Dollar amount per progress level |
+| `max_level` | 20 | Maximum number of progress levels |
+| `rainbow_threshold` | 1500 | Earnings that trigger rainbow background (0 = disabled) |
+| `monthly_multiplier` | 5 | Multiplier for monthly level calculations |
+| `level_descriptions` | {} | Custom names for levels (e.g., `{1: 'Beginner', 10: 'Pro'}`) |
+
+### Customizing Your Progress System
+
+You can completely customize the progress levels to match your goals:
+
+```php
+'progress_levels' => [
+    'daily_increment' => 100,    // $100 per level instead of $92
+    'max_level' => 15,           // 15 levels instead of 20
+    'rainbow_threshold' => 1200, // Rainbow at $1,200 instead of $1,500
+    'monthly_multiplier' => 4,   // 4x daily for monthly (4 work days/week)
+    'level_descriptions' => [
+        1 => 'Getting Started',
+        5 => 'Warming Up', 
+        10 => 'In The Zone',
+        15 => 'Legendary!'
+    ]
+]
+```
+
+This creates a system where:
+- Level 1: $0-$100, Level 2: $100-$200, etc.
+- Maximum of 15 levels (Level 15 = $1,500)
+- Rainbow background at $1,200
+- Monthly levels calculated as daily × 4
+- Custom tooltips on hover for special levels
+
 ## Dashboard Features
 
 ### Progress Levels
-The dashboard uses a 20-level system based on daily earnings:
-- **Level 1-19**: Brown to bright green gradient ($0 - $1,748)
-- **Level 20+**: Rainbow animation ($1,840+)
+The dashboard uses a configurable level system based on daily earnings:
+- **Levels 1-N**: Progressive color gradient from brown to bright green
+- **Rainbow Mode**: Special animation when earnings exceed your rainbow threshold
+- **Fully Customizable**: Set your own level increments, maximum levels, and thresholds
 
 ### Performance Settings
 - **Update Interval**: 15s, 30s, 1min, or 2min

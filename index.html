@@ -1431,6 +1431,15 @@
         let animationsEnabled = true;
         let updateIntervalMs = 30000; // Default to 30 seconds instead of 15
         
+        // Configuration from API (will be updated when API responds)
+        let config = {
+            daily_increment: 92,
+            max_level: 20,
+            rainbow_threshold: 1500,
+            monthly_multiplier: 5,
+            level_descriptions: {}
+        };
+        
         // Performance monitoring
         let lastUpdateTime = 0;
         let updateCount = 0;
@@ -1586,6 +1595,11 @@
                 
                 if (!result.success) {
                     throw new Error(result.error || 'Unknown API error');
+                }
+
+                // Update configuration from API response
+                if (result.config) {
+                    config = { ...config, ...result.config };
                 }
 
                 const sessionCount = result.session_count || 0;
@@ -1853,26 +1867,26 @@
             // Remove all existing level classes efficiently
             body.className = body.className.replace(/\blevel-\d+\b/g, '').replace(/\bbg-rainbow\b/g, '').replace(/\banimate-rainbow\b/g, '');
             
-            // Calculate level based on earnings (20 levels from $0 to $1840)
-            const level = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
+            // Calculate level based on configurable earnings
+            const level = Math.min(Math.floor(dailyEarnings / config.daily_increment) + 1, config.max_level);
             
-            if (dailyEarnings >= 1500) {
-                // $1500+ = Rainbow (ultimate level!)
+            if (config.rainbow_threshold > 0 && dailyEarnings >= config.rainbow_threshold) {
+                // Rainbow threshold reached!
                 body.classList.add('bg-rainbow');
                 if (animationsEnabled && isTabVisible) {
                     body.classList.add('animate-rainbow');
                 }
-            } else if (level >= 1 && level <= 20) {
+            } else if (level >= 1 && level <= config.max_level) {
                 // Progressive color levels
                 body.classList.add(`level-${level}`);
             }
         }
 
         function updateProgressInfo(dailyEarnings) {
-            // Calculate current level (1-20) and progress within that level
-            const level = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
-            const progressInLevel = (dailyEarnings % 92) / 92 * 100;
-            const nextLevelAmount = level < 20 ? (level * 92) : 1840;
+            // Calculate current level and progress within that level using configurable values
+            const level = Math.min(Math.floor(dailyEarnings / config.daily_increment) + 1, config.max_level);
+            const progressInLevel = (dailyEarnings % config.daily_increment) / config.daily_increment * 100;
+            const nextLevelAmount = level < config.max_level ? (level * config.daily_increment) : (config.max_level * config.daily_increment);
             
             document.getElementById('progressLevel').textContent = level;
             document.getElementById('progressFill').style.width = `${progressInLevel}%`;
@@ -1900,8 +1914,8 @@
                 const earnings = dayData.earnings || 0;
                 const hours = dayData.hours || 0;
                 
-                // Calculate level for coloring (same as main dashboard)
-                const level = Math.min(Math.floor(earnings / 92) + 1, 20);
+                // Calculate level for coloring using configurable values
+                const level = Math.min(Math.floor(earnings / config.daily_increment) + 1, config.max_level);
                 
                 // Create day box
                 const dayBox = document.createElement('div');
@@ -1909,8 +1923,9 @@
                 
                 // Add level class for coloring
                 if (earnings > 0) {
-                    if (earnings >= 1840) {
-                        dayBox.classList.add('day-level-20');
+                    const maxLevelThreshold = config.max_level * config.daily_increment;
+                    if (earnings >= maxLevelThreshold) {
+                        dayBox.classList.add(`day-level-${config.max_level}`);
                         if (animationsEnabled && isTabVisible) {
                             dayBox.classList.add('animate-rainbow');
                         }
@@ -1963,9 +1978,9 @@
                 const earnings = monthData.earnings || 0;
                 const hours = monthData.hours || 0;
                 
-                // Calculate level for coloring (using monthly scale: levels 1-20 represent $0-$36800 in $1840 increments)
-                const monthlyLevelAmount = 460; // $460 per level for monthly (5 work days * $92/day average)
-                const level = Math.min(Math.floor(earnings / monthlyLevelAmount) + 1, 20);
+                // Calculate level for coloring using configurable monthly scale
+                const monthlyLevelAmount = config.daily_increment * config.monthly_multiplier;
+                const level = Math.min(Math.floor(earnings / monthlyLevelAmount) + 1, config.max_level);
                 
                 // Create month box
                 const monthBox = document.createElement('div');
@@ -1973,8 +1988,9 @@
                 
                 // Add level class for coloring
                 if (earnings > 0) {
-                    if (earnings >= 9200) { // Level 20 threshold for monthly ($460 * 20)
-                        monthBox.classList.add('month-level-20');
+                    const maxMonthlyThreshold = monthlyLevelAmount * config.max_level;
+                    if (earnings >= maxMonthlyThreshold) {
+                        monthBox.classList.add(`month-level-${config.max_level}`);
                         if (animationsEnabled && isTabVisible) {
                             monthBox.classList.add('animate-rainbow');
                         }
@@ -2005,16 +2021,16 @@
 
         function updateLevelBreakdown(dailyEarnings) {
             const levelGrid = document.getElementById('levelGrid');
-            const currentLevel = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
+            const currentLevel = Math.min(Math.floor(dailyEarnings / config.daily_increment) + 1, config.max_level);
             
             // Use DocumentFragment for better performance
             const fragment = document.createDocumentFragment();
             
-            // Generate level status bars for all 20 levels
-            for (let level = 1; level <= 20; level++) {
+            // Generate level status bars for all configured levels
+            for (let level = 1; level <= config.max_level; level++) {
                 const levelDiv = document.createElement('div');
-                const levelStart = (level - 1) * 92;
-                const levelEnd = level * 92;
+                const levelStart = (level - 1) * config.daily_increment;
+                const levelEnd = level * config.daily_increment;
                 
                 // Determine status
                 let status = 'locked';
@@ -2025,12 +2041,16 @@
                     progress = 100;
                 } else if (level === currentLevel) {
                     status = 'current';
-                    progress = ((dailyEarnings - levelStart) / 92) * 100;
+                    progress = ((dailyEarnings - levelStart) / config.daily_increment) * 100;
                 }
+                
+                // Get custom description if available
+                const levelDescription = config.level_descriptions[level] || '';
+                const levelTitle = levelDescription ? ` title="${levelDescription}"` : '';
                 
                 levelDiv.className = `level-status ${status}`;
                 levelDiv.innerHTML = `
-                    <div class="level-number">${level}</div>
+                    <div class="level-number"${levelTitle}>${level}</div>
                     <div class="level-bar">
                         <div class="level-bar-fill" style="width: ${progress}%"></div>
                     </div>

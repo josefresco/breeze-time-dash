@@ -24,6 +24,14 @@ $hourlyRate = $config['hourly_rate'] ?? 115;
 $excludedUsers = $config['excluded_users'] ?? ['stuart'];
 $apiTimeout = $config['api_timeout'] ?? 10;
 
+// Progress level configuration
+$progressLevels = $config['progress_levels'] ?? [];
+$dailyIncrement = $progressLevels['daily_increment'] ?? 92;
+$maxLevel = $progressLevels['max_level'] ?? 20;
+$rainbowThreshold = $progressLevels['rainbow_threshold'] ?? 1500;
+$monthlyMultiplier = $progressLevels['monthly_multiplier'] ?? 5;
+$levelDescriptions = $progressLevels['level_descriptions'] ?? [];
+
 if (empty($apiKey) || $apiKey === 'YOUR_BREEZE_API_KEY_HERE') {
     echo json_encode([
         'success' => false,
@@ -75,7 +83,14 @@ try {
         'champion_data' => [],
         'top_projects' => [],
         'data' => [],
-        'debug_info' => []
+        'debug_info' => [],
+        'config' => [
+            'daily_increment' => $dailyIncrement,
+            'max_level' => $maxLevel,
+            'rainbow_threshold' => $rainbowThreshold,
+            'monthly_multiplier' => $monthlyMultiplier,
+            'level_descriptions' => $levelDescriptions
+        ]
     ];
     
     // 1. Get running timers (active sessions)
