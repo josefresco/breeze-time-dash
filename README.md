@@ -30,7 +30,7 @@ A beautiful, real-time dashboard for tracking time and earnings from Breeze PM. 
    return [
        'breeze_api_key' => 'your_actual_api_key_here',
        'hourly_rate' => 115, // Your hourly rate
-       'excluded_users' => ['stuart'], // Users to exclude from leaderboard
+       'excluded_users' => ['admin'], // Users to exclude from leaderboard
        'api_timeout' => 10
    ];
    ```
@@ -60,7 +60,7 @@ Deploy to any web server with PHP support. The dashboard will be available at yo
 |---------|---------|-------------|
 | `breeze_api_key` | - | Your Breeze PM API token (required) |
 | `hourly_rate` | 115 | Your billing rate per hour |
-| `excluded_users` | ['stuart'] | Users to exclude from leaderboard |
+| `excluded_users` | ['admin'] | Users to exclude from leaderboard (case insensitive) |
 | `api_timeout` | 10 | API request timeout in seconds |
 
 ### Progress Level System

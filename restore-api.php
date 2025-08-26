@@ -21,7 +21,7 @@ if (!file_exists('config.php')) {
 $config = require 'config.php';
 $apiKey = $config['breeze_api_key'];
 $hourlyRate = $config['hourly_rate'] ?? 115;
-$excludedUsers = $config['excluded_users'] ?? ['stuart'];
+$excludedUsers = $config['excluded_users'] ?? ['admin'];
 $apiTimeout = $config['api_timeout'] ?? 10;
 
 // Progress level configuration

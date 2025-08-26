@@ -10,7 +10,8 @@ return [
     'hourly_rate' => 115,
     
     // Users to exclude from champion leaderboard (case insensitive)
-    'excluded_users' => ['stuart'],
+    // Examples: ['admin', 'manager', 'test-user']
+    'excluded_users' => ['admin'],
     
     // API timeout in seconds
     'api_timeout' => 10,
