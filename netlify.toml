@@ -25,9 +25,8 @@
   to = "/.netlify/functions/breeze-api"
   status = 200
 
-# SPA fallback (optional, for client-side routing)
+# SPA fallback - serve index.html for all routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin"]}
