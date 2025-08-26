@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breeze Time Tracker Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #654321 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Simplified 20-step color progression - only applied when needed */
+        body.level-1 { background: linear-gradient(135deg, #654321 0%, #8B4513 50%, #A0522D 100%); }
+        body.level-2 { background: linear-gradient(135deg, #7B4B1E 0%, #9B5213 50%, #B5622D 100%); }
+        body.level-3 { background: linear-gradient(135deg, #8B5A1B 0%, #AB6113 50%, #C5722D 100%); }
+        body.level-4 { background: linear-gradient(135deg, #9B6918 0%, #BB7013 50%, #D5822D 100%); }
+        body.level-5 { background: linear-gradient(135deg, #AB7815 0%, #CB7F13 50%, #E5922D 100%); }
+        body.level-6 { background: linear-gradient(135deg, #BB8712 0%, #DB8E13 50%, #F5A22D 100%); }
+        body.level-7 { background: linear-gradient(135deg, #CB960F 0%, #EB9D13 50%, #FFB22D 100%); }
+        body.level-8 { background: linear-gradient(135deg, #DBA50C 0%, #FBAC13 50%, #FFC22D 100%); }
+        body.level-9 { background: linear-gradient(135deg, #EBB409 0%, #FFBB13 50%, #FFD22D 100%); }
+        body.level-10 { background: linear-gradient(135deg, #FBC306 0%, #FFCA13 50%, #FFE22D 100%); }
+        body.level-11 { background: linear-gradient(135deg, #FFD203 0%, #FFD913 50%, #FFF22D 100%); }
+        body.level-12 { background: linear-gradient(135deg, #FFE100 0%, #FFE813 50%, #FFFF2D 100%); }
+        body.level-13 { background: linear-gradient(135deg, #E6F000 0%, #E6F513 50%, #E6FF2D 100%); }
+        body.level-14 { background: linear-gradient(135deg, #CCFF00 0%, #CCFF13 50%, #CCFF2D 100%); }
+        body.level-15 { background: linear-gradient(135deg, #B3FF00 0%, #B3FF13 50%, #B3FF2D 100%); }
+        body.level-16 { background: linear-gradient(135deg, #99FF00 0%, #99FF13 50%, #99FF2D 100%); }
+        body.level-17 { background: linear-gradient(135deg, #80FF00 0%, #80FF13 50%, #80FF2D 100%); }
+        body.level-18 { background: linear-gradient(135deg, #66FF00 0%, #66FF13 50%, #66FF2D 100%); }
+        body.level-19 { background: linear-gradient(135deg, #4DFF00 0%, #4DFF13 50%, #4DFF2D 100%); }
+        body.level-20 { background: linear-gradient(135deg, #33FF00 0%, #33FF13 50%, #33FF2D 100%); }
+
+        /* Rainbow only when explicitly activated and paused when tab not visible */
+        body.bg-rainbow {
+            background: linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080);
+            background-size: 400% 400%;
+        }
+
+        body.bg-rainbow.animate-rainbow {
+            animation: rainbow-pulse 3s ease infinite;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-indicator {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .status-red {
+            background: #e74c3c;
+        }
+
+        .status-green {
+            background: #27ae60;
+        }
+
+        .status-rainbow {
+            background: linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080);
+            background-size: 400% 400%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Only animate rainbow when tab is visible and explicitly enabled */
+        .status-rainbow.animate-rainbow {
+            animation: rainbow 2s ease infinite;
+        }
+
+        .status-rainbow.animate-rainbow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 20%, rgba(255,255,255,0.1) 21%, rgba(255,255,255,0.1) 25%, transparent 26%), 
+                        linear-gradient(0deg, transparent 24%, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.05) 26%, transparent 27%, transparent 74%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05) 76%, transparent 77%, transparent);
+            animation: sparkle 3s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes rainbow-pulse {
+            0%, 100% { 
+                background-position: 0% 50%; 
+                transform: scale(1);
+            }
+            50% { 
+                background-position: 100% 50%; 
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes sparkle {
+            0% { transform: rotate(0deg) scale(1); }
+            100% { transform: rotate(360deg) scale(1.1); }
+        }
+
+        /* Reduced bounce animation - only when explicitly triggered */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .trophy-bounce {
+            animation: bounce 2s infinite;
+        }
+
+        .sessions-info {
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+
+        .time-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .time-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+        }
+
+        .time-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .billable-section {
+            border: 2px solid #007755;
+        }
+
+        .billable-section h3 {
+            color: #007755;
+        }
+
+        .non-billable-section {
+            border: 2px solid #cc7700;
+        }
+
+        .non-billable-section h3 {
+            color: #cc7700;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .time-metric {
+            text-align: center;
+        }
+
+        .time-metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .time-metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .billable-value {
+            color: #007755;
+        }
+
+        .non-billable-value {
+            color: #cc7700;
+        }
+
+        .champion-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            margin: 30px 0;
+            border: 2px solid #ff6b6b;
+        }
+
+        .champion-section h3 {
+            color: #d63031;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .champion-content {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .champion-trophy {
+            text-align: center;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #ffd700;
+            max-width: 300px;
+        }
+
+        .trophy-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .champion-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #b8860b;
+            margin-bottom: 5px;
+        }
+
+        .champion-hours {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .leaderboard h4 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            padding: 12px 15px;
+            min-height: 50px;
+        }
+
+        .leaderboard-entry.current-user {
+            background: rgba(108, 92, 231, 0.3);
+            border: 2px solid #6c5ce7;
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.2);
+        }
+
+        .leaderboard-entry.champion {
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            margin-left: 15px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 10px;
+        }
+
+        .leaderboard-hours {
+            font-weight: bold;
+            color: #333;
+            min-width: 70px;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        .top-projects-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            margin: 30px 0;
+            border: 2px solid #2d3436;
+        }
+
+        .top-projects-section h3 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .projects-leaderboard {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .project-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            padding: 15px 18px;
+            min-height: 60px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .project-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .project-entry.top-project {
+            background: rgba(46, 204, 113, 0.3);
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.2);
+        }
+
+        .project-rank {
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .project-info {
+            flex: 1;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .project-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2d3436;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .project-description {
+            font-size: 0.85rem;
+            color: #636e72;
+            opacity: 0.9;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .project-stats {
+            text-align: right;
+            min-width: 100px;
+        }
+
+        .project-hours {
+            font-weight: bold;
+            color: #2d3436;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .project-earnings {
+            font-size: 0.9rem;
+            color: #00b894;
+            font-weight: 600;
+        }
+
+        .project-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0 4px 0;
+        }
+
+        .project-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #2ecc71);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .earnings-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            margin: 30px 0;
+            border: 2px solid #00aa66;
+        }
+
+        .earnings-section h3 {
+            color: #005544;
+            margin-bottom: 20px;
+        }
+
+        .earnings-metric {
+            text-align: center;
+        }
+
+        .earnings-metric-label {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .earnings-metric-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #007755;
+        }
+
+        .dollar-emojis {
+            margin-top: 8px;
+            font-size: 1.2rem;
+            line-height: 1.2;
+        }
+
+        .weekly-earnings-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            margin: 30px 0;
+            border: 2px solid #6c5ce7;
+        }
+
+        .monthly-earnings-section {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            margin: 30px 0;
+            border: 2px solid #e17055;
+        }
+
+        .weekly-earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .monthly-earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .daily-earnings-box {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .monthly-earnings-box {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 2px solid transparent;
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .daily-earnings-box.today {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+            transform: scale(1.05);
+        }
+
+        .monthly-earnings-box.current-month {
+            border-color: #e17055;
+            box-shadow: 0 0 15px rgba(225, 112, 85, 0.3);
+            transform: scale(1.02);
+        }
+
+        .daily-earnings-box.weekend {
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0.7;
+        }
+
+        /* Daily earning level colors - static, no animations */
+        .daily-earnings-box.day-level-1 { background: linear-gradient(135deg, rgba(101, 67, 33, 0.3), rgba(139, 69, 19, 0.3)); }
+        .daily-earnings-box.day-level-2 { background: linear-gradient(135deg, rgba(123, 75, 30, 0.3), rgba(155, 82, 19, 0.3)); }
+        .daily-earnings-box.day-level-3 { background: linear-gradient(135deg, rgba(139, 90, 27, 0.3), rgba(171, 97, 19, 0.3)); }
+        .daily-earnings-box.day-level-4 { background: linear-gradient(135deg, rgba(155, 105, 24, 0.3), rgba(187, 112, 19, 0.3)); }
+        .daily-earnings-box.day-level-5 { background: linear-gradient(135deg, rgba(171, 120, 21, 0.3), rgba(203, 127, 19, 0.3)); }
+        .daily-earnings-box.day-level-6 { background: linear-gradient(135deg, rgba(187, 135, 18, 0.3), rgba(219, 142, 19, 0.3)); }
+        .daily-earnings-box.day-level-7 { background: linear-gradient(135deg, rgba(203, 150, 15, 0.3), rgba(235, 157, 19, 0.3)); }
+        .daily-earnings-box.day-level-8 { background: linear-gradient(135deg, rgba(219, 165, 12, 0.3), rgba(251, 172, 19, 0.3)); }
+        .daily-earnings-box.day-level-9 { background: linear-gradient(135deg, rgba(235, 180, 9, 0.3), rgba(255, 187, 19, 0.3)); }
+        .daily-earnings-box.day-level-10 { background: linear-gradient(135deg, rgba(251, 195, 6, 0.3), rgba(255, 202, 19, 0.3)); }
+        .daily-earnings-box.day-level-11 { background: linear-gradient(135deg, rgba(255, 210, 3, 0.3), rgba(255, 217, 19, 0.3)); }
+        .daily-earnings-box.day-level-12 { background: linear-gradient(135deg, rgba(255, 225, 0, 0.3), rgba(255, 232, 19, 0.3)); }
+        .daily-earnings-box.day-level-13 { background: linear-gradient(135deg, rgba(230, 240, 0, 0.3), rgba(230, 245, 19, 0.3)); }
+        .daily-earnings-box.day-level-14 { background: linear-gradient(135deg, rgba(204, 255, 0, 0.3), rgba(204, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-15 { background: linear-gradient(135deg, rgba(179, 255, 0, 0.3), rgba(179, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-16 { background: linear-gradient(135deg, rgba(153, 255, 0, 0.3), rgba(153, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-17 { background: linear-gradient(135deg, rgba(128, 255, 0, 0.3), rgba(128, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-18 { background: linear-gradient(135deg, rgba(102, 255, 0, 0.3), rgba(102, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-19 { background: linear-gradient(135deg, rgba(77, 255, 0, 0.3), rgba(77, 255, 19, 0.3)); }
+        .daily-earnings-box.day-level-20 { 
+            background: linear-gradient(45deg, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(128, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 255, 128, 0.3), rgba(0, 255, 255, 0.3));
+            background-size: 400% 400%;
+        }
+
+        /* Monthly earning level colors - same system as daily */
+        .monthly-earnings-box.month-level-1 { background: linear-gradient(135deg, rgba(101, 67, 33, 0.3), rgba(139, 69, 19, 0.3)); }
+        .monthly-earnings-box.month-level-2 { background: linear-gradient(135deg, rgba(123, 75, 30, 0.3), rgba(155, 82, 19, 0.3)); }
+        .monthly-earnings-box.month-level-3 { background: linear-gradient(135deg, rgba(139, 90, 27, 0.3), rgba(171, 97, 19, 0.3)); }
+        .monthly-earnings-box.month-level-4 { background: linear-gradient(135deg, rgba(155, 105, 24, 0.3), rgba(187, 112, 19, 0.3)); }
+        .monthly-earnings-box.month-level-5 { background: linear-gradient(135deg, rgba(171, 120, 21, 0.3), rgba(203, 127, 19, 0.3)); }
+        .monthly-earnings-box.month-level-6 { background: linear-gradient(135deg, rgba(187, 135, 18, 0.3), rgba(219, 142, 19, 0.3)); }
+        .monthly-earnings-box.month-level-7 { background: linear-gradient(135deg, rgba(203, 150, 15, 0.3), rgba(235, 157, 19, 0.3)); }
+        .monthly-earnings-box.month-level-8 { background: linear-gradient(135deg, rgba(219, 165, 12, 0.3), rgba(251, 172, 19, 0.3)); }
+        .monthly-earnings-box.month-level-9 { background: linear-gradient(135deg, rgba(235, 180, 9, 0.3), rgba(255, 187, 19, 0.3)); }
+        .monthly-earnings-box.month-level-10 { background: linear-gradient(135deg, rgba(251, 195, 6, 0.3), rgba(255, 202, 19, 0.3)); }
+        .monthly-earnings-box.month-level-11 { background: linear-gradient(135deg, rgba(255, 210, 3, 0.3), rgba(255, 217, 19, 0.3)); }
+        .monthly-earnings-box.month-level-12 { background: linear-gradient(135deg, rgba(255, 225, 0, 0.3), rgba(255, 232, 19, 0.3)); }
+        .monthly-earnings-box.month-level-13 { background: linear-gradient(135deg, rgba(230, 240, 0, 0.3), rgba(230, 245, 19, 0.3)); }
+        .monthly-earnings-box.month-level-14 { background: linear-gradient(135deg, rgba(204, 255, 0, 0.3), rgba(204, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-15 { background: linear-gradient(135deg, rgba(179, 255, 0, 0.3), rgba(179, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-16 { background: linear-gradient(135deg, rgba(153, 255, 0, 0.3), rgba(153, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-17 { background: linear-gradient(135deg, rgba(128, 255, 0, 0.3), rgba(128, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-18 { background: linear-gradient(135deg, rgba(102, 255, 0, 0.3), rgba(102, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-19 { background: linear-gradient(135deg, rgba(77, 255, 0, 0.3), rgba(77, 255, 19, 0.3)); }
+        .monthly-earnings-box.month-level-20 { 
+            background: linear-gradient(45deg, rgba(255, 0, 0, 0.3), rgba(255, 128, 0, 0.3), rgba(255, 255, 0, 0.3), rgba(128, 255, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 255, 128, 0.3), rgba(0, 255, 255, 0.3));
+            background-size: 400% 400%;
+        }
+
+        /* Only animate level 20 when tab is visible */
+        .daily-earnings-box.day-level-20.animate-rainbow {
+            animation: rainbow-pulse 3s ease infinite;
+        }
+
+        .monthly-earnings-box.month-level-20.animate-rainbow {
+            animation: rainbow-pulse 3s ease infinite;
+        }
+
+        .day-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .month-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .day-date {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .month-year {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .day-earnings {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .month-earnings {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .day-hours {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .month-hours {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .progress-info {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffdd59, #00ff88);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .level-breakdown {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+
+        .level-breakdown h3 {
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .level-status {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-status.completed {
+            background: rgba(0, 170, 102, 0.2);
+            border: 1px solid #00aa66;
+        }
+
+        .level-status.current {
+            background: rgba(204, 153, 0, 0.2);
+            border: 1px solid #cc9900;
+            box-shadow: 0 0 10px rgba(204, 153, 0, 0.3);
+        }
+
+        .level-status.locked {
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0.6;
+        }
+
+        .level-number {
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-width: 20px;
+        }
+
+        .level-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .level-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffdd59, #00ff88);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .level-amount {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .debug-info {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #c0392b;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .start-section {
+            margin-bottom: 30px;
+        }
+
+        /* Performance settings panel */
+        .performance-panel {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(5px);
+            text-align: left;
+        }
+
+        .performance-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .setting-label {
+            font-weight: 500;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-status {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 800px) {
+            .champion-content {
+                justify-content: center;
+            }
+            
+            .trophy-icon {
+                font-size: 2.5rem;
+            }
+            
+            .champion-name {
+                font-size: 1.1rem;
+            }
+            
+            .time-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .weekly-earnings-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+            }
+            
+            .monthly-earnings-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 5px;
+            }
+            
+            .daily-earnings-box {
+                padding: 10px 5px;
+                min-height: 80px;
+            }
+            
+            .monthly-earnings-box {
+                padding: 10px 5px;
+                min-height: 80px;
+            }
+            
+            .day-earnings {
+                font-size: 1.1rem;
+            }
+            
+            .month-earnings {
+                font-size: 1.1rem;
+            }
+            
+            .status-indicator {
+                width: 200px;
+                height: 200px;
+                font-size: 5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .weekly-earnings-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 3px;
+            }
+            
+            .monthly-earnings-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .daily-earnings-box {
+                padding: 8px 3px;
+                min-height: 70px;
+            }
+            
+            .monthly-earnings-box {
+                padding: 15px 10px;
+                min-height: 120px;
+            }
+            
+            .day-name {
+                font-size: 0.8rem;
+            }
+            
+            .day-earnings {
+                font-size: 1rem;
+            }
+            
+            .day-hours {
+                font-size: 0.6rem;
+            }
+            
+            .status-indicator {
+                width: 150px;
+                height: 150px;
+                font-size: 4rem;
+            }
+        }
+
+        /* Compact Mode Styles */
+        body.compact-mode .container {
+            padding: 20px;
+            max-width: 550px;
+        }
+
+        body.compact-mode h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        body.compact-mode .status-indicator {
+            width: 120px;
+            height: 120px;
+            font-size: 3rem;
+            margin: 15px auto;
+        }
+
+        body.compact-mode .sessions-info {
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+
+        body.compact-mode .progress-info {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .progress-info > div {
+            font-size: 0.9rem;
+            margin: 5px 0;
+        }
+
+        body.compact-mode .time-sections {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .time-section {
+            padding: 15px;
+        }
+
+        body.compact-mode .time-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        body.compact-mode .time-metric-value {
+            font-size: 1.4rem;
+        }
+
+        body.compact-mode .earnings-section {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .earnings-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        body.compact-mode .earnings-metric-value {
+            font-size: 1.8rem;
+        }
+
+        body.compact-mode .champion-section {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .champion-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        body.compact-mode .champion-trophy {
+            padding: 15px;
+        }
+
+        body.compact-mode .trophy-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        body.compact-mode .champion-name {
+            font-size: 1.1rem;
+        }
+
+        body.compact-mode .champion-hours {
+            font-size: 0.9rem;
+        }
+
+        body.compact-mode .leaderboard {
+            padding: 15px;
+        }
+
+        body.compact-mode .leaderboard h4 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        body.compact-mode .leaderboard-entry {
+            padding: 8px 12px;
+            min-height: 40px;
+        }
+
+        body.compact-mode .leaderboard-rank {
+            font-size: 1rem;
+            min-width: 30px;
+        }
+
+        body.compact-mode .leaderboard-name {
+            margin-left: 10px;
+            font-size: 0.9rem;
+        }
+
+        body.compact-mode .leaderboard-hours {
+            font-size: 0.85rem;
+            min-width: 60px;
+        }
+
+        body.compact-mode .top-projects-section {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .top-projects-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        body.compact-mode .projects-leaderboard {
+            padding: 15px;
+        }
+
+        body.compact-mode .project-entry {
+            padding: 12px 15px;
+            min-height: 50px;
+        }
+
+        body.compact-mode .project-rank {
+            font-size: 1.1rem;
+            min-width: 40px;
+        }
+
+        body.compact-mode .project-name {
+            font-size: 1rem;
+        }
+
+        body.compact-mode .project-description {
+            font-size: 0.8rem;
+        }
+
+        body.compact-mode .project-hours {
+            font-size: 1rem;
+        }
+
+        body.compact-mode .project-earnings {
+            font-size: 0.85rem;
+        }
+
+        body.compact-mode .project-stats {
+            min-width: 85px;
+        }
+
+        body.compact-mode .weekly-earnings-section,
+        body.compact-mode .monthly-earnings-section {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .weekly-earnings-section h3,
+        body.compact-mode .monthly-earnings-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        body.compact-mode .weekly-earnings-grid {
+            gap: 6px;
+        }
+
+        body.compact-mode .monthly-earnings-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        body.compact-mode .daily-earnings-box {
+            padding: 8px 6px;
+            min-height: 75px;
+        }
+
+        body.compact-mode .monthly-earnings-box {
+            padding: 10px 8px;
+            min-height: 85px;
+        }
+
+        body.compact-mode .day-name,
+        body.compact-mode .month-name {
+            font-size: 0.8rem;
+        }
+
+        body.compact-mode .day-date,
+        body.compact-mode .month-year {
+            font-size: 0.7rem;
+        }
+
+        body.compact-mode .day-earnings,
+        body.compact-mode .month-earnings {
+            font-size: 1.1rem;
+        }
+
+        body.compact-mode .day-hours,
+        body.compact-mode .month-hours {
+            font-size: 0.65rem;
+        }
+
+        body.compact-mode .level-breakdown {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .level-breakdown h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        body.compact-mode .level-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 6px;
+        }
+
+        body.compact-mode .level-status {
+            padding: 6px;
+            gap: 6px;
+        }
+
+        body.compact-mode .level-number {
+            font-size: 0.8rem;
+            min-width: 18px;
+        }
+
+        body.compact-mode .level-bar {
+            height: 6px;
+        }
+
+        body.compact-mode .level-amount {
+            font-size: 0.7rem;
+            min-width: 35px;
+        }
+
+        body.compact-mode .performance-panel {
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        body.compact-mode .performance-panel h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        body.compact-mode .setting-row {
+            padding: 6px;
+            margin: 8px 0;
+        }
+
+        body.compact-mode .setting-label {
+            font-size: 0.9rem;
+        }
+
+        body.compact-mode .tab-status {
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+
+        body.compact-mode button {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        body.compact-mode .debug-info {
+            padding: 8px;
+            font-size: 0.8rem;
+            max-height: 100px;
+        }
+
+        body.compact-mode .error {
+            padding: 12px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">    
+        
+        <div id="start-section" class="start-section">
+            <button onclick="startDashboard()">Start Dashboard</button>
+            <div id="error-message" class="error" style="display: none;"></div>
+        </div>
+
+        <div id="dashboard" class="dashboard">
+            <div class="status-indicator status-red" id="statusIndicator">
+                😞
+            </div>
+
+            <div class="sessions-info" id="sessionsInfo">
+                Active Sessions: 0 | Total Hours: 0.00
+            </div>
+
+            <div class="progress-info">
+                <div><strong>Daily Progress Level: <span id="progressLevel">1</span>/20</strong></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div>Next Level: $<span id="nextLevelAmount">92</span></div>
+            </div>
+
+            <div class="weekly-earnings-section">
+                <h3 style="margin-bottom: 20px; color: #333; text-align: center;">📊 Weekly Earnings Log</h3>
+                <div class="weekly-earnings-grid" id="weeklyEarningsGrid">
+                    <!-- Weekly earnings will be generated here -->
+                </div>
+            </div>
+
+            <div class="earnings-section">
+                <h3>💵 Earnings (Billable Only)</h3>
+                <div class="earnings-metric">
+                    <div class="earnings-metric-label">Daily Total</div>
+                    <div class="earnings-metric-value" id="dailyTotal">$0.00</div>
+                    <div class="dollar-emojis" id="dollarEmojis"></div>
+                </div>
+            </div>
+
+            <div class="champion-section">
+                <h3>🏆 Champion of the Day</h3>
+                <div class="champion-content">
+                    <div class="champion-trophy">
+                        <div class="trophy-icon" id="trophyIcon">🏆</div>
+                        <div class="champion-name" id="championName">Loading...</div>
+                        <div class="champion-hours" id="championHours">0.00 hours</div>
+                    </div>
+                </div>
+                <div class="leaderboard" id="leaderboard">
+                    <h4>🎯 Today's Leaderboard</h4>
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <!-- Leaderboard entries will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="top-projects-section">
+                <h3>📊 Top Projects (Last 30 Days)</h3>
+                <div class="projects-leaderboard" id="projectsLeaderboard">
+                    <div class="projects-list" id="projectsList">
+                        <!-- Top projects will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="level-breakdown">
+                <h3 style="margin-bottom: 15px;">Level Status Breakdown</h3>
+                <div class="level-grid" id="levelGrid">
+                    <!-- Level status bars will be generated here -->
+                </div>
+            </div>
+
+            <div class="monthly-earnings-section">
+                <h3 style="margin-bottom: 20px; color: #333; text-align: center;">📅 Monthly Totals (6 Month View)</h3>
+                <div class="monthly-earnings-grid" id="monthlyEarningsGrid">
+                    <!-- Monthly earnings will be generated here -->
+                </div>
+            </div>
+
+            <div class="time-sections">
+                <div class="time-section billable-section">
+                    <h3>💰 Billable Time</h3>
+                    <div class="time-grid">
+                        <div class="time-metric">
+                            <div class="time-metric-label">Daily Hours</div>
+                            <div class="time-metric-value billable-value" id="billableHours">0.00</div>
+                        </div>
+                        <div class="time-metric">
+                            <div class="time-metric-label">Running Hours</div>
+                            <div class="time-metric-value billable-value" id="runningHours">0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="time-section non-billable-section">
+                    <h3>⏱️ Non-Billable Time</h3>
+                    <div class="time-grid">
+                        <div class="time-metric">
+                            <div class="time-metric-label">Daily Hours</div>
+                            <div class="time-metric-value non-billable-value" id="nonBillableHours">0.00</div>
+                        </div>
+                        <div class="time-metric">
+                            <div class="time-metric-label">% of Total</div>
+                            <div class="time-metric-value non-billable-value" id="nonBillablePercent">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="debug-info" id="debugInfo" style="display: none;">
+                <strong>Debug Info:</strong><br>
+                <div id="debugContent"></div>
+            </div>
+            
+            <button onclick="toggleDebug()" style="margin-top: 20px; font-size: 12px; padding: 8px 16px;">
+                Toggle Debug Info
+            </button>
+
+            <div class="performance-panel">
+                <h3>⚡ Performance Settings</h3>
+                <div class="setting-row">
+                    <div class="setting-label">Update Interval</div>
+                    <div class="setting-control">
+                        <select id="updateInterval" onchange="changeUpdateInterval()">
+                            <option value="15000">15 seconds</option>
+                            <option value="30000" selected>30 seconds</option>
+                            <option value="60000">1 minute</option>
+                            <option value="120000">2 minutes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">Animations</div>
+                    <div class="setting-control">
+                        <label><input type="checkbox" id="enableAnimations" onchange="toggleAnimations()" checked> Enable animations</label>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">Compact Mode</div>
+                    <div class="setting-control">
+                        <label><input type="checkbox" id="compactMode" onchange="toggleCompactMode()"> Enable compact view (550px width)</label>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-label">Auto-pause when tab hidden</div>
+                    <div class="setting-control">
+                        <label><input type="checkbox" id="autoPause" checked> Save CPU when not visible</label>
+                    </div>
+                </div>
+                <div class="tab-status" id="tabStatus">Tab is visible - Full performance mode</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+        let startTime = null;
+        let lastSessionCount = 0;
+        let showDebug = false;
+        let isTabVisible = true;
+        let animationsEnabled = true;
+        let updateIntervalMs = 30000; // Default to 30 seconds instead of 15
+        
+        // Performance monitoring
+        let lastUpdateTime = 0;
+        let updateCount = 0;
+        
+        // Tab visibility API for performance optimization
+        document.addEventListener('visibilitychange', function() {
+            isTabVisible = !document.hidden;
+            updateTabStatus();
+            
+            if (document.getElementById('autoPause').checked) {
+                if (isTabVisible) {
+                    // Tab became visible - resume full functionality
+                    if (animationsEnabled) {
+                        enableAnimations();
+                    }
+                    // Don't change update interval - let it continue at user's chosen rate
+                } else {
+                    // Tab hidden - disable animations and reduce updates
+                    disableAnimations();
+                }
+            }
+        });
+        
+        function updateTabStatus() {
+            const statusEl = document.getElementById('tabStatus');
+            const autoPauseEnabled = document.getElementById('autoPause').checked;
+            
+            if (isTabVisible) {
+                statusEl.textContent = 'Tab is visible - Full performance mode';
+                statusEl.style.background = 'rgba(0, 170, 102, 0.2)';
+            } else {
+                if (autoPauseEnabled) {
+                    statusEl.textContent = 'Tab hidden - Power saving mode (animations paused)';
+                    statusEl.style.background = 'rgba(255, 193, 7, 0.2)';
+                } else {
+                    statusEl.textContent = 'Tab hidden - Full mode (may use more CPU)';
+                    statusEl.style.background = 'rgba(220, 53, 69, 0.2)';
+                }
+            }
+        }
+        
+        function enableAnimations() {
+            if (!animationsEnabled || !isTabVisible) return;
+            
+            // Enable rainbow animations
+            document.body.classList.add('animate-rainbow');
+            document.querySelector('.status-rainbow')?.classList.add('animate-rainbow');
+            
+            // Enable trophy bounce
+            document.getElementById('trophyIcon')?.classList.add('trophy-bounce');
+            
+            // Enable level 20 animations in weekly and monthly views
+            document.querySelectorAll('.day-level-20, .month-level-20').forEach(el => {
+                el.classList.add('animate-rainbow');
+            });
+        }
+        
+        function disableAnimations() {
+            // Disable all animations
+            document.body.classList.remove('animate-rainbow');
+            document.querySelector('.status-rainbow')?.classList.remove('animate-rainbow');
+            document.getElementById('trophyIcon')?.classList.remove('trophy-bounce');
+            
+            document.querySelectorAll('.day-level-20, .month-level-20').forEach(el => {
+                el.classList.remove('animate-rainbow');
+            });
+        }
+        
+        function toggleAnimations() {
+            animationsEnabled = document.getElementById('enableAnimations').checked;
+            
+            if (animationsEnabled && isTabVisible) {
+                enableAnimations();
+            } else {
+                disableAnimations();
+            }
+        }
+        
+        function toggleCompactMode() {
+            const compactEnabled = document.getElementById('compactMode').checked;
+            const body = document.body;
+            
+            if (compactEnabled) {
+                body.classList.add('compact-mode');
+                // Save preference to localStorage if available
+                try {
+                    localStorage.setItem('compactMode', 'true');
+                } catch (e) {
+                    // Ignore localStorage errors in restricted environments
+                }
+            } else {
+                body.classList.remove('compact-mode');
+                try {
+                    localStorage.setItem('compactMode', 'false');
+                } catch (e) {
+                    // Ignore localStorage errors
+                }
+            }
+        }
+        
+        function changeUpdateInterval() {
+            const newInterval = parseInt(document.getElementById('updateInterval').value);
+            updateIntervalMs = newInterval;
+            
+            // Restart the interval with new timing
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = setInterval(updateDashboard, updateIntervalMs);
+            }
+        }
+        
+        function startDashboard() {
+            document.getElementById('start-section').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            // Initialize tab status
+            updateTabStatus();
+            
+            // Update immediately, then use the selected interval
+            updateDashboard();
+            updateInterval = setInterval(updateDashboard, updateIntervalMs);
+        }
+
+        async function updateDashboard() {
+            const startUpdate = performance.now();
+            
+            try {
+                console.log('Fetching from API...');
+                
+                // Add cache-busting parameter but only when tab is visible for real-time feel
+                const cacheBuster = isTabVisible ? `&t=${Date.now()}` : '';
+                
+                const response = await fetch(`./restore-api.php?${cacheBuster}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': isTabVisible ? 'no-cache' : 'max-age=30'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                // Only log detailed response when tab is visible to reduce console spam
+                if (isTabVisible) {
+                    console.log('API Response:', result);
+                }
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Unknown API error');
+                }
+
+                const sessionCount = result.session_count || 0;
+                const billableHours = result.billable_hours || 0;
+                const nonBillableHours = result.non_billable_hours || 0;
+                const dailyEarnings = result.daily_earnings || 0;
+                
+                // Batch DOM updates to reduce reflow
+                requestAnimationFrame(() => {
+                    updateStatusIndicator(sessionCount);
+                    updateTimeMetrics(sessionCount, billableHours, nonBillableHours);
+                    updateChampionSection(result.champion_data || {});
+                    updateTopProjects(result.top_projects || []);
+                    updateEarnings(sessionCount, dailyEarnings, billableHours);
+                    updateSessionsInfo(sessionCount, billableHours, nonBillableHours);
+                    updateBackgroundColor(dailyEarnings);
+                    updateProgressInfo(dailyEarnings);
+                    updateWeeklyEarnings(result.weekly_earnings || []);
+                    updateMonthlyEarnings(result.monthly_earnings || []);
+                    updateLevelBreakdown(dailyEarnings);
+                    
+                    // Only update debug info when it's visible
+                    if (showDebug) {
+                        updateDebugInfo(result.debug_info || []);
+                    }
+                });
+                
+                hideError();
+                
+                // Performance tracking
+                const updateTime = performance.now() - startUpdate;
+                updateCount++;
+                lastUpdateTime = updateTime;
+                
+                if (isTabVisible && updateCount % 10 === 0) {
+                    console.log(`Average update time: ${updateTime.toFixed(2)}ms`);
+                }
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showError(`Failed to fetch data: ${error.message}`);
+                
+                // Reset indicator to red on error
+                const indicator = document.getElementById('statusIndicator');
+                indicator.className = 'status-indicator status-red';
+                indicator.textContent = '💥';
+            }
+        }
+
+        function updateStatusIndicator(sessionCount) {
+            const indicator = document.getElementById('statusIndicator');
+            
+            // Remove old classes
+            indicator.classList.remove('status-red', 'status-green', 'status-rainbow', 'animate-rainbow');
+            
+            if (sessionCount === 0) {
+                indicator.className = 'status-indicator status-red';
+                indicator.textContent = '😞';
+            } else if (sessionCount === 1) {
+                indicator.className = 'status-indicator status-green';
+                indicator.textContent = '😊';
+            } else {
+                indicator.className = 'status-indicator status-rainbow';
+                indicator.textContent = '🤯';
+                
+                // Only add animation if enabled and tab is visible
+                if (animationsEnabled && isTabVisible) {
+                    indicator.classList.add('animate-rainbow');
+                }
+            }
+        }
+
+        function updateTimeMetrics(sessionCount, billableHours, nonBillableHours) {
+            // Update billable hours
+            document.getElementById('billableHours').textContent = billableHours.toFixed(2);
+            
+            // Update non-billable hours
+            document.getElementById('nonBillableHours').textContent = nonBillableHours.toFixed(2);
+            
+            // Calculate running hours (what you're earning right now)
+            const now = Date.now();
+            
+            // If session count changed, reset timing for running total
+            if (sessionCount !== lastSessionCount) {
+                startTime = now;
+                lastSessionCount = sessionCount;
+            }
+            
+            let runningHours = 0;
+            if (sessionCount > 0 && startTime) {
+                const hoursElapsed = (now - startTime) / (1000 * 60 * 60);
+                runningHours = sessionCount * hoursElapsed; // Assume all running sessions are billable
+            }
+            
+            document.getElementById('runningHours').textContent = runningHours.toFixed(2);
+            
+            // Calculate non-billable percentage
+            const totalHours = billableHours + nonBillableHours;
+            const nonBillablePercent = totalHours > 0 ? (nonBillableHours / totalHours * 100) : 0;
+            document.getElementById('nonBillablePercent').textContent = nonBillablePercent.toFixed(0) + '%';
+        }
+
+        function updateChampionSection(championData) {
+            const {
+                champion_name = 'No one yet',
+                champion_hours = 0,
+                leaderboard = []
+            } = championData;
+
+            // Update trophy section
+            document.getElementById('championName').textContent = champion_name;
+            document.getElementById('championHours').textContent = `${champion_hours.toFixed(2)} hours`;
+            
+            // Update trophy icon based on champion hours
+            const trophyIcon = document.getElementById('trophyIcon');
+            trophyIcon.classList.remove('trophy-bounce'); // Remove any existing animation
+            
+            if (champion_hours === 0) {
+                trophyIcon.textContent = '😴';
+            } else if (champion_hours >= 8) {
+                trophyIcon.textContent = '👑';
+                if (animationsEnabled && isTabVisible) {
+                    trophyIcon.classList.add('trophy-bounce');
+                }
+            } else if (champion_hours >= 6) {
+                trophyIcon.textContent = '🏆';
+                if (animationsEnabled && isTabVisible) {
+                    trophyIcon.classList.add('trophy-bounce');
+                }
+            } else if (champion_hours >= 4) {
+                trophyIcon.textContent = '🥇';
+            } else if (champion_hours >= 2) {
+                trophyIcon.textContent = '🥈';
+            } else {
+                trophyIcon.textContent = '🥉';
+            }
+
+            // Update leaderboard - use DocumentFragment for better performance
+            const leaderboardList = document.getElementById('leaderboardList');
+            const fragment = document.createDocumentFragment();
+            
+            if (leaderboard.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = 'text-align: center; color: #666; padding: 20px;';
+                placeholder.textContent = 'No time logged yet today! 🚀';
+                fragment.appendChild(placeholder);
+            } else {
+                leaderboard.forEach((entry, index) => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'leaderboard-entry';
+                    
+                    // Add special classes
+                    if (entry.is_current_user) {
+                        entryDiv.classList.add('current-user');
+                    }
+                    if (index === 0) {
+                        entryDiv.classList.add('champion');
+                    }
+                    
+                    // Rank emoji
+                    let rankEmoji = '';
+                    if (index === 0) rankEmoji = '🥇';
+                    else if (index === 1) rankEmoji = '🥈';
+                    else if (index === 2) rankEmoji = '🥉';
+                    else rankEmoji = `${index + 1}.`;
+                    
+                    entryDiv.innerHTML = `
+                        <div class="leaderboard-rank">${rankEmoji}</div>
+                        <div class="leaderboard-name">${entry.name}${entry.is_current_user ? ' (You)' : ''}</div>
+                        <div class="leaderboard-hours">${entry.hours.toFixed(1)}h</div>
+                    `;
+                    
+                    fragment.appendChild(entryDiv);
+                });
+            }
+            
+            // Single DOM operation
+            leaderboardList.innerHTML = '';
+            leaderboardList.appendChild(fragment);
+        }
+
+        function updateTopProjects(topProjects) {
+            const projectsList = document.getElementById('projectsList');
+            const fragment = document.createDocumentFragment();
+            
+            if (topProjects.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = 'text-align: center; color: #666; padding: 30px;';
+                placeholder.innerHTML = `
+                    <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
+                    <div>No project data available for the last 30 days</div>
+                `;
+                fragment.appendChild(placeholder);
+            } else {
+                // Find the maximum hours for progress bar scaling
+                const maxHours = Math.max(...topProjects.map(p => p.hours));
+                
+                topProjects.forEach((project, index) => {
+                    const projectDiv = document.createElement('div');
+                    projectDiv.className = 'project-entry';
+                    
+                    // Add special class for #1 project
+                    if (index === 0) {
+                        projectDiv.classList.add('top-project');
+                    }
+                    
+                    // Rank emoji
+                    let rankEmoji = '';
+                    if (index === 0) rankEmoji = '🥇';
+                    else if (index === 1) rankEmoji = '🥈';
+                    else if (index === 2) rankEmoji = '🥉';
+                    else rankEmoji = `${index + 1}.`;
+                    
+                    // Calculate progress bar width
+                    const progressWidth = maxHours > 0 ? (project.hours / maxHours * 100) : 0;
+                    
+                    // Truncate description if too long
+                    const description = project.description || 'No description available';
+                    const truncatedDescription = description.length > 50 ? 
+                        description.substring(0, 47) + '...' : description;
+                    
+                    projectDiv.innerHTML = `
+                        <div class="project-rank">${rankEmoji}</div>
+                        <div class="project-info">
+                            <div class="project-name">${project.name}</div>
+                            <div class="project-description">${truncatedDescription}</div>
+                            <div class="project-bar">
+                                <div class="project-bar-fill" style="width: ${progressWidth}%"></div>
+                            </div>
+                        </div>
+                        <div class="project-stats">
+                            <div class="project-hours">${project.hours.toFixed(1)}h</div>
+                            <div class="project-earnings">${project.earnings.toFixed(0)}</div>
+                        </div>
+                    `;
+                    
+                    fragment.appendChild(projectDiv);
+                });
+            }
+            
+            // Single DOM operation
+            projectsList.innerHTML = '';
+            projectsList.appendChild(fragment);
+        }
+
+        function updateEarnings(sessionCount, dailyEarnings, billableHours) {
+            // Update display (removed running total)
+            document.getElementById('dailyTotal').textContent = `${dailyEarnings.toFixed(2)}`;
+            
+            // Update dollar emojis (one for each hour logged) - limit to prevent performance issues
+            const dollarsContainer = document.getElementById('dollarEmojis');
+            const hours = Math.min(Math.floor(billableHours), 20); // Cap at 20 to prevent too many emojis
+            dollarsContainer.textContent = '💵'.repeat(hours);
+        }
+
+        function updateSessionsInfo(sessionCount, billableHours, nonBillableHours) {
+            const totalHours = billableHours + nonBillableHours;
+            const info = document.getElementById('sessionsInfo');
+            info.textContent = `Active Sessions: ${sessionCount} | Total Hours: ${totalHours.toFixed(2)}`;
+        }
+
+        function updateBackgroundColor(dailyEarnings) {
+            const body = document.body;
+            
+            // Remove all existing level classes efficiently
+            body.className = body.className.replace(/\blevel-\d+\b/g, '').replace(/\bbg-rainbow\b/g, '').replace(/\banimate-rainbow\b/g, '');
+            
+            // Calculate level based on earnings (20 levels from $0 to $1840)
+            const level = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
+            
+            if (dailyEarnings >= 1500) {
+                // $1500+ = Rainbow (ultimate level!)
+                body.classList.add('bg-rainbow');
+                if (animationsEnabled && isTabVisible) {
+                    body.classList.add('animate-rainbow');
+                }
+            } else if (level >= 1 && level <= 20) {
+                // Progressive color levels
+                body.classList.add(`level-${level}`);
+            }
+        }
+
+        function updateProgressInfo(dailyEarnings) {
+            // Calculate current level (1-20) and progress within that level
+            const level = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
+            const progressInLevel = (dailyEarnings % 92) / 92 * 100;
+            const nextLevelAmount = level < 20 ? (level * 92) : 1840;
+            
+            document.getElementById('progressLevel').textContent = level;
+            document.getElementById('progressFill').style.width = `${progressInLevel}%`;
+            document.getElementById('nextLevelAmount').textContent = nextLevelAmount.toFixed(0);
+        }
+
+        function updateWeeklyEarnings(weeklyData) {
+            const weeklyGrid = document.getElementById('weeklyEarningsGrid');
+            const today = new Date();
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            // Generate boxes for last 7 days
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayDate = date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                
+                // Find earnings data for this date
+                const dayData = weeklyData.find(d => d.date === dateKey) || { earnings: 0, hours: 0 };
+                const earnings = dayData.earnings || 0;
+                const hours = dayData.hours || 0;
+                
+                // Calculate level for coloring (same as main dashboard)
+                const level = Math.min(Math.floor(earnings / 92) + 1, 20);
+                
+                // Create day box
+                const dayBox = document.createElement('div');
+                dayBox.className = 'daily-earnings-box';
+                
+                // Add level class for coloring
+                if (earnings > 0) {
+                    if (earnings >= 1840) {
+                        dayBox.classList.add('day-level-20');
+                        if (animationsEnabled && isTabVisible) {
+                            dayBox.classList.add('animate-rainbow');
+                        }
+                    } else {
+                        dayBox.classList.add(`day-level-${level}`);
+                    }
+                }
+                
+                // Add special classes
+                if (i === 0) { // Today
+                    dayBox.classList.add('today');
+                }
+                
+                if (date.getDay() === 0 || date.getDay() === 6) { // Weekend
+                    dayBox.classList.add('weekend');
+                }
+                
+                dayBox.innerHTML = `
+                    <div class="day-name">${dayName}</div>
+                    <div class="day-date">${dayDate}</div>
+                    <div class="day-earnings">${earnings.toFixed(0)}</div>
+                    <div class="day-hours">${hours.toFixed(1)}h</div>
+                `;
+                
+                fragment.appendChild(dayBox);
+            }
+            
+            // Single DOM operation
+            weeklyGrid.innerHTML = '';
+            weeklyGrid.appendChild(fragment);
+        }
+
+        function updateMonthlyEarnings(monthlyData) {
+            const monthlyGrid = document.getElementById('monthlyEarningsGrid');
+            const today = new Date();
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            // Generate boxes for last 6 months
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                
+                const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+                const monthYear = date.getFullYear();
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM format
+                
+                // Find earnings data for this month
+                const monthData = monthlyData.find(d => d.month === monthKey) || { earnings: 0, hours: 0 };
+                const earnings = monthData.earnings || 0;
+                const hours = monthData.hours || 0;
+                
+                // Calculate level for coloring (using monthly scale: levels 1-20 represent $0-$36800 in $1840 increments)
+                const monthlyLevelAmount = 460; // $460 per level for monthly (5 work days * $92/day average)
+                const level = Math.min(Math.floor(earnings / monthlyLevelAmount) + 1, 20);
+                
+                // Create month box
+                const monthBox = document.createElement('div');
+                monthBox.className = 'monthly-earnings-box';
+                
+                // Add level class for coloring
+                if (earnings > 0) {
+                    if (earnings >= 9200) { // Level 20 threshold for monthly ($460 * 20)
+                        monthBox.classList.add('month-level-20');
+                        if (animationsEnabled && isTabVisible) {
+                            monthBox.classList.add('animate-rainbow');
+                        }
+                    } else {
+                        monthBox.classList.add(`month-level-${level}`);
+                    }
+                }
+                
+                // Add special classes
+                if (i === 0) { // Current month
+                    monthBox.classList.add('current-month');
+                }
+                
+                monthBox.innerHTML = `
+                    <div class="month-name">${monthName}</div>
+                    <div class="month-year">${monthYear}</div>
+                    <div class="month-earnings">${earnings.toFixed(0)}</div>
+                    <div class="month-hours">${hours.toFixed(1)}h</div>
+                `;
+                
+                fragment.appendChild(monthBox);
+            }
+            
+            // Single DOM operation
+            monthlyGrid.innerHTML = '';
+            monthlyGrid.appendChild(fragment);
+        }
+
+        function updateLevelBreakdown(dailyEarnings) {
+            const levelGrid = document.getElementById('levelGrid');
+            const currentLevel = Math.min(Math.floor(dailyEarnings / 92) + 1, 20);
+            
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            // Generate level status bars for all 20 levels
+            for (let level = 1; level <= 20; level++) {
+                const levelDiv = document.createElement('div');
+                const levelStart = (level - 1) * 92;
+                const levelEnd = level * 92;
+                
+                // Determine status
+                let status = 'locked';
+                let progress = 0;
+                
+                if (level < currentLevel || (level === currentLevel && dailyEarnings >= levelEnd)) {
+                    status = 'completed';
+                    progress = 100;
+                } else if (level === currentLevel) {
+                    status = 'current';
+                    progress = ((dailyEarnings - levelStart) / 92) * 100;
+                }
+                
+                levelDiv.className = `level-status ${status}`;
+                levelDiv.innerHTML = `
+                    <div class="level-number">${level}</div>
+                    <div class="level-bar">
+                        <div class="level-bar-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="level-amount">${levelEnd}</div>
+                `;
+                
+                fragment.appendChild(levelDiv);
+            }
+            
+            // Single DOM operation
+            levelGrid.innerHTML = '';
+            levelGrid.appendChild(fragment);
+        }
+
+        function updateDebugInfo(debugInfo) {
+            // Only update if debug panel is visible
+            if (!showDebug) return;
+            
+            const debugContent = document.getElementById('debugContent');
+            if (debugInfo && debugInfo.length > 0) {
+                debugContent.innerHTML = debugInfo.map(info => `• ${info}`).join('<br>');
+            } else {
+                debugContent.innerHTML = 'No debug information available';
+            }
+        }
+
+        function toggleDebug() {
+            showDebug = !showDebug;
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = showDebug ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        // Optimized API connection test - only when tab is visible
+        window.addEventListener('load', function() {
+            if (isTabVisible) {
+                console.log('Page loaded, testing API connection...');
+                fetch('./restore-api.php')
+                    .then(response => {
+                        console.log('API test response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('API test successful:', data);
+                    })
+                    .catch(error => {
+                        console.error('API test failed:', error);
+                    });
+            }
+        });
+        
+        // Initialize settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTabStatus();
+            
+            // Load compact mode preference
+            try {
+                const compactMode = localStorage.getItem('compactMode');
+                if (compactMode === 'true') {
+                    document.getElementById('compactMode').checked = true;
+                    document.body.classList.add('compact-mode');
+                }
+            } catch (e) {
+                // Ignore localStorage errors in restricted environments
+            }
+        });
+    </script>
+</body>
+</html>

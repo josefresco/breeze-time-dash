@@ -1,0 +1,13 @@
+# Ignore configuration file with sensitive data
+config.php
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

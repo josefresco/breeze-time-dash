@@ -1,0 +1,18 @@
+<?php
+// Configuration file for Breeze Time Tracker Dashboard
+// Copy this file to config.php and update with your actual values
+
+return [
+    // Your Breeze PM API key - Get this from your Breeze account settings
+    'breeze_api_key' => 'YOUR_BREEZE_API_KEY_HERE',
+    
+    // Your hourly rate for calculating earnings
+    'hourly_rate' => 115,
+    
+    // Users to exclude from champion leaderboard (case insensitive)
+    'excluded_users' => ['stuart'],
+    
+    // API timeout in seconds
+    'api_timeout' => 10
+];
+?>
