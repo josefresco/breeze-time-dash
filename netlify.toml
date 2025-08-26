@@ -1,0 +1,33 @@
+[build]
+  # Directory to publish (default: . for root)
+  publish = "."
+  
+  # Functions directory
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node.js version for functions
+  NODE_VERSION = "18"
+
+# Environment variable template (set actual values in Netlify dashboard)
+# BREEZE_API_KEY = "your_breeze_api_key_here"
+# HOURLY_RATE = "115"
+# EXCLUDED_USERS = "admin,manager"  # Comma separated list
+# API_TIMEOUT = "10"
+# DAILY_INCREMENT = "92"
+# MAX_LEVEL = "20" 
+# RAINBOW_THRESHOLD = "1500"
+# MONTHLY_MULTIPLIER = "5"
+
+# Redirect API calls to the function
+[[redirects]]
+  from = "/api/breeze-data"
+  to = "/.netlify/functions/breeze-api"
+  status = 200
+
+# SPA fallback (optional, for client-side routing)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}

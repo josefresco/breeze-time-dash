@@ -14,44 +14,71 @@ A beautiful, real-time dashboard for tracking time and earnings from Breeze PM. 
 
 ## Setup
 
+### 🚀 Quick Deploy to Netlify (Recommended)
+
+1. **Fork this repository** on GitHub
+2. **Connect to Netlify**:
+   - Go to [netlify.com](https://netlify.com)
+   - Click "Add new site" → "Import an existing project"
+   - Connect your GitHub account and select your forked repository
+3. **Configure Environment Variables** in Netlify dashboard:
+   ```
+   BREEZE_API_KEY = your_actual_api_key_here
+   HOURLY_RATE = 115
+   EXCLUDED_USERS = admin,manager
+   DAILY_INCREMENT = 92
+   MAX_LEVEL = 20
+   RAINBOW_THRESHOLD = 1500
+   MONTHLY_MULTIPLIER = 5
+   API_TIMEOUT = 10
+   ```
+4. **Deploy** - Netlify will automatically build and deploy your site!
+
+### 📋 Get your Breeze PM API key:
+- Log into your Breeze account
+- Go to Settings → Integrations  
+- Generate a new API token
+
+### 🛠️ Local Development
+
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/josefresco/get-that-money.git
-   cd get-that-money
+   git clone https://github.com/josefresco/breeze-time-dash.git
+   cd breeze-time-dash
    ```
 
-2. **Configure your API credentials**
+2. **Install Netlify CLI** (optional)
    ```bash
-   cp config.php.example config.php
+   npm install -g netlify-cli
    ```
 
-3. **Edit `config.php`** with your Breeze PM API key:
-   ```php
-   return [
-       'breeze_api_key' => 'your_actual_api_key_here',
-       'hourly_rate' => 115, // Your hourly rate
-       'excluded_users' => ['admin'], // Users to exclude from leaderboard
-       'api_timeout' => 10
-   ];
+3. **Set up environment variables**
+   Create `.env` file:
+   ```bash
+   BREEZE_API_KEY=your_actual_api_key_here
+   HOURLY_RATE=115
+   EXCLUDED_USERS=admin,manager
    ```
 
-4. **Get your Breeze PM API key**:
-   - Log into your Breeze account
-   - Go to Settings → Integrations
-   - Generate a new API token
+4. **Run locally**
+   ```bash
+   netlify dev
+   ```
+   Opens at `http://localhost:8888`
 
 ## Deployment
 
-### Local Development
-Run with any local PHP server:
-```bash
-php -S localhost:8000
-```
+### ✅ Netlify (Recommended)
+- **Free hosting** with generous limits
+- **Automatic deploys** from GitHub
+- **Serverless functions** for secure API calls
+- **Custom domains** with free SSL
+- **Environment variables** for secure configuration
 
-### Production
-Deploy to any web server with PHP support. The dashboard will be available at your domain.
-
-**Note**: GitHub Pages only supports static files, so the PHP API won't work there. You'll need a PHP-enabled hosting service.
+### Alternative Options
+- **Vercel**: Similar to Netlify with serverless functions
+- **Railway.app**: Full-stack deployment with Git integration
+- **Any static host**: For frontend-only deployment (requires CORS setup)
 
 ## Configuration Options
 

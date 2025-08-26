@@ -1,13 +1,26 @@
-# Ignore configuration file with sensitive data
-config.php
+# Environment variables with sensitive data
+.env
 
-# Ignore system files
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Netlify
+.netlify/
+
+# System files
 .DS_Store
 Thumbs.db
 
-# Ignore editor files
+# Editor files
 *.swp
 *.swo
 *~
 .vscode/
 .idea/
+
+# Legacy PHP files (no longer used)
+config.php
+restore-api.php

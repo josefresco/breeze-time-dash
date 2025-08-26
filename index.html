@@ -1570,9 +1570,9 @@
                 console.log('Fetching from API...');
                 
                 // Add cache-busting parameter but only when tab is visible for real-time feel
-                const cacheBuster = isTabVisible ? `&t=${Date.now()}` : '';
+                const cacheBuster = isTabVisible ? `?t=${Date.now()}` : '';
                 
-                const response = await fetch(`./restore-api.php?${cacheBuster}`, {
+                const response = await fetch(`/api/breeze-data${cacheBuster}`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -2097,7 +2097,7 @@
         window.addEventListener('load', function() {
             if (isTabVisible) {
                 console.log('Page loaded, testing API connection...');
-                fetch('./restore-api.php')
+                fetch('/api/breeze-data')
                     .then(response => {
                         console.log('API test response status:', response.status);
                         return response.json();
